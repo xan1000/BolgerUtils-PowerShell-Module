@@ -1,4 +1,4 @@
-# BolgerUtils Module
+# BolgerUtils PowerShell Module
 
 Provides helper PowerShell functions.
 
