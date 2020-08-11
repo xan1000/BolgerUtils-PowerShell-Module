@@ -26,7 +26,7 @@ function BolgerUtils-Zip-Folder {
     param(
         [ValidateNotNullOrEmpty()]
         [string]
-        $folderPath = $null
+        $folderPath
     )
 
     if(-Not (Test-Path $folderPath -PathType Container)) {
@@ -70,4 +70,23 @@ function BolgerUtils-Zip-Project {
     }
 
     BolgerUtils-Zip-Folder $folderPath
+}
+
+function BolgerUtils-Create-Script {
+    param(
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $patternToReplaceWithinTemplate,
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $template,
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $inputLines
+    )
+
+    $lines = $inputLines.Split([System.String[]] @("`r`n", "`n"), [System.StringSplitOptions]::RemoveEmptyEntries)
+    foreach($line in $lines) {
+        $template.Replace($patternToReplaceWithinTemplate, $line)
+    }
 }
