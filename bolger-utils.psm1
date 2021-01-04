@@ -54,6 +54,27 @@ function BolgerUtils-Zip-Project {
         return
     }
 
+    # Clean and zip project.
+    BolgerUtils-Clean-Project $folderPath
+    BolgerUtils-Zip-Folder $folderPath
+}
+
+function BolgerUtils-Clean-Project {
+    param(
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $folderPath
+    )
+
+    if(-Not (Test-Path $folderPath -PathType Container)) {
+        Write-Error "The path '$folderPath' is not a directory."
+        return
+    }
+    if(-Not (Test-Path "$($folderPath)\*.sln" -PathType Leaf)) {
+        Write-Error "The path '$folderPath' does not contain a .sln file."
+        return
+    }
+
     # Clean solution and remove .vs folder.
     dotnet clean $folderPath
     Remove-Item "$($folderPath)\.vs" -Force -Recurse -ErrorAction SilentlyContinue
@@ -68,8 +89,6 @@ function BolgerUtils-Zip-Project {
         dotnet clean $_
         Remove-Item "$($_)\bin", "$($_)\obj" -Force -Recurse -ErrorAction SilentlyContinue
     }
-
-    BolgerUtils-Zip-Folder $folderPath
 }
 
 function BolgerUtils-Create-Script {
