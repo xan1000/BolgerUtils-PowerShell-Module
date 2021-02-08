@@ -3,7 +3,6 @@ Examples:
 
 BolgerUtils-ConsoleHere
 BolgerUtils-ConsoleHere -admin
-BolgerUtils-ConsoleHere -Admin
 #>
 function BolgerUtils-ConsoleHere {
     param(
