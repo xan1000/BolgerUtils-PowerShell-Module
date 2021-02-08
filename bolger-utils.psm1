@@ -1,17 +1,26 @@
-function BolgerUtils-New-ConsoleInAdminModeHere {
-    Start-Process wt -ArgumentList '-d .' -verb RunAs
+<#
+Examples:
+
+BolgerUtils-ConsoleHere
+BolgerUtils-ConsoleHere -admin
+BolgerUtils-ConsoleHere -Admin
+#>
+function BolgerUtils-ConsoleHere {
+    param(
+        [Parameter(HelpMessage="Creates console in admin mode")]
+        [switch]
+        $admin = $false
+    )
+
+    if($admin) {
+        Start-Process wt -ArgumentList '-d .' -verb RunAs
+    } else {
+        Start-Process wt -ArgumentList '-d .'
+    }
 }
 
-function BolgerUtils-New-ConsoleHere {
-    Start-Process wt -ArgumentList '-d .'
-}
-
-function BolgerUtils-Update-GitForWindows {
+function BolgerUtils-Git-Update {
     git update-git-for-windows
-}
-
-function BolgerUtils-Test-DatabaseConnection {
-    & 'D:\Visual Studio 2019\Projects\TestDatabaseConnection\TestDatabaseConnection\bin\Debug\netcoreapp3.1\TestDatabaseConnection.exe'
 }
 
 function BolgerUtils-Node-TaskList {
@@ -22,7 +31,7 @@ function BolgerUtils-Node-TaskKill {
     taskkill /f /im node.exe
 }
 
-function BolgerUtils-Zip-Folder {
+function BolgerUtils-Zip {
     param(
         [ValidateNotNullOrEmpty()]
         [string]
@@ -38,7 +47,7 @@ function BolgerUtils-Zip-Folder {
     Compress-Archive -Force -Path $folderPath -DestinationPath "$($folderName).zip"
 }
 
-function BolgerUtils-Zip-Project {
+function BolgerUtils-Project-Zip {
     param(
         [ValidateNotNullOrEmpty()]
         [string]
@@ -55,11 +64,11 @@ function BolgerUtils-Zip-Project {
     }
 
     # Clean and zip project.
-    BolgerUtils-Clean-Project $folderPath
-    BolgerUtils-Zip-Folder $folderPath
+    BolgerUtils-Project-Clean $folderPath
+    BolgerUtils-Zip $folderPath
 }
 
-function BolgerUtils-Clean-Project {
+function BolgerUtils-Project-Clean {
     param(
         [ValidateNotNullOrEmpty()]
         [string]
@@ -91,7 +100,29 @@ function BolgerUtils-Clean-Project {
     }
 }
 
-function BolgerUtils-Create-Script {
+<#
+Examples:
+
+Single-line:
+    BolgerUtils-Script-Create '<database-name>' 'create database [<database-name>];' 'TestDatabase'
+ 
+Output:
+    create database [TestDatabase];
+
+Multi-line:
+    BolgerUtils-Script-Create '<database-name>' 'create database [<database-name>];' 'TestDatabase1
+    TestDatabase2
+    TestDatabase3'
+
+Output:
+    create database [TestDatabase1];
+    create database [TestDatabase2];
+    create database [TestDatabase3];
+
+Files:
+    BolgerUtils-Script-Create '<database-name>' (Get-Content -Raw TemplateFile.txt) (Get-Content -Raw InputFile.txt)
+#>
+function BolgerUtils-Script-Create {
     param(
         [ValidateNotNullOrEmpty()]
         [string]
