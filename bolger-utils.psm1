@@ -57,12 +57,15 @@ function BolgerUtils-Project-Zip {
         Write-Error "The path '$folderPath' is not a directory."
         return
     }
-    if(-Not (Test-Path "$($folderPath)\*.sln" -PathType Leaf)) {
-        Write-Error "The path '$folderPath' does not contain a .sln file."
+    
+    $folderPathContainsSlnFile = Test-Path "$($folderPath)\*.sln" -PathType Leaf
+    $folderPathContainsCsprojFile = Test-Path "$($folderPath)\*.csproj" -PathType Leaf
+    if(-Not $folderPathContainsSlnFile -and -Not $folderPathContainsCsprojFile) {
+        Write-Error "The path '$folderPath' does not contain a .sln or .csproj file."
         return
     }
 
-    # Clean and zip project.
+    # Clean and zip the project.
     BolgerUtils-Project-Clean $folderPath
     BolgerUtils-Zip $folderPath
 }
@@ -78,24 +81,75 @@ function BolgerUtils-Project-Clean {
         Write-Error "The path '$folderPath' is not a directory."
         return
     }
-    if(-Not (Test-Path "$($folderPath)\*.sln" -PathType Leaf)) {
-        Write-Error "The path '$folderPath' does not contain a .sln file."
+    
+    $folderPathContainsSlnFile = Test-Path "$($folderPath)\*.sln" -PathType Leaf
+    $folderPathContainsCsprojFile = Test-Path "$($folderPath)\*.csproj" -PathType Leaf
+    if(-Not $folderPathContainsSlnFile -and -Not $folderPathContainsCsprojFile) {
+        Write-Error "The path '$folderPath' does not contain a .sln or .csproj file."
         return
     }
 
-    # Clean solution and remove .vs folder.
-    dotnet clean $folderPath
-    Remove-Item "$($folderPath)\.vs" -Force -Recurse -ErrorAction SilentlyContinue
+    if($folderPathContainsSlnFile -and -Not $folderPathContainsCsprojFile) {
+        # Clean all the projects.
+        Get-ChildItem -Directory $folderPath | ForEach-Object {
+            # Skip the folder if no .csproj file is found.
+            if(-Not (Test-Path "$($_)\*.csproj" -PathType Leaf)) {
+                continue
+            }
 
-    # Clean all projects and remove bin & obj folders.
-    Get-ChildItem -Directory $folderPath | ForEach-Object {
-        # Skip folder if no .csproj file is found.
-        if(-Not (Test-Path "$($_)\*.csproj" -PathType Leaf)) {
+            dotnet clean $_
+        }
+    }
+
+    # Clean the solution / project.
+    dotnet clean $folderPath
+    
+    # Remove the .vs folder.
+    $path = "$(Get-Item $folderPath)\.vs"
+    if(Test-Path $path -PathType Container) {
+        Write-Host "Removing $($path)"
+        Remove-Item $path -Force -Recurse -ErrorAction Continue
+    }
+
+    BolgerUtils-Project-Remove-BinAndObj $folderPath
+}
+
+function BolgerUtils-Project-Remove-BinAndObj {
+    param(
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $folderPath
+    )
+
+    if(-Not (Test-Path $folderPath -PathType Container)) {
+        Write-Error "The path '$folderPath' is not a directory."
+        return
+    }
+
+    $folderPathContainsSlnFile = Test-Path "$($folderPath)\*.sln" -PathType Leaf
+    $folderPathContainsCsprojFile = Test-Path "$($folderPath)\*.csproj" -PathType Leaf
+    if(-Not $folderPathContainsSlnFile -and -Not $folderPathContainsCsprojFile) {
+        Write-Error "The path '$folderPath' does not contain a .sln or .csproj file."
+        return
+    }
+
+    $folders = $folderPathContainsCsprojFile ? @(Get-Item $folderPath) : (Get-ChildItem -Directory $folderPath)
+
+    # Scan all folders starting from the provided folder path and
+    # remove the bin & obj folders if a .csproj file is present.
+    foreach($folder in $folders) {
+        # Skip the folder if no .csproj file is found.
+        if(-Not (Test-Path "$($folder)\*.csproj" -PathType Leaf)) {
             continue
         }
 
-        dotnet clean $_
-        Remove-Item "$($_)\bin", "$($_)\obj" -Force -Recurse -ErrorAction SilentlyContinue
+        $paths = @("$($folder)\bin", "$($folder)\obj")
+        foreach($path in $paths) {
+            if(Test-Path $path -PathType Container) {
+                Write-Host "Removing $($path)"
+                Remove-Item $path -Force -Recurse -ErrorAction Continue
+            }
+        }
     }
 }
 
