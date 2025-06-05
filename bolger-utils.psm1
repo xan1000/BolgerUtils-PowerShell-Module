@@ -58,10 +58,11 @@ function BolgerUtils-Project-Zip {
         return
     }
     
-    $folderPathContainsSlnFile = Test-Path "$($folderPath)\*.sln" -PathType Leaf
+    $folderPathContainsSlnFile = `
+        (Get-ChildItem "$folderPath" -Filter "*.sln") -or (Get-ChildItem "$folderPath" -Filter "*.slnx")
     $folderPathContainsCsprojFile = Test-Path "$($folderPath)\*.csproj" -PathType Leaf
     if(-Not $folderPathContainsSlnFile -and -Not $folderPathContainsCsprojFile) {
-        Write-Error "The path '$folderPath' does not contain a .sln or .csproj file."
+        Write-Error "The path '$folderPath' does not contain a .sln or .slnx or .csproj file."
         return
     }
 
@@ -82,10 +83,11 @@ function BolgerUtils-Project-Clean {
         return
     }
     
-    $folderPathContainsSlnFile = Test-Path "$($folderPath)\*.sln" -PathType Leaf
+    $folderPathContainsSlnFile = `
+        (Get-ChildItem "$folderPath" -Filter "*.sln") -or (Get-ChildItem "$folderPath" -Filter "*.slnx")
     $folderPathContainsCsprojFile = Test-Path "$($folderPath)\*.csproj" -PathType Leaf
     if(-Not $folderPathContainsSlnFile -and -Not $folderPathContainsCsprojFile) {
-        Write-Error "The path '$folderPath' does not contain a .sln or .csproj file."
+        Write-Error "The path '$folderPath' does not contain a .sln or .slnx or .csproj file."
         return
     }
 
@@ -126,10 +128,11 @@ function BolgerUtils-Project-Remove-BinAndObj {
         return
     }
 
-    $folderPathContainsSlnFile = Test-Path "$($folderPath)\*.sln" -PathType Leaf
+    $folderPathContainsSlnFile = `
+        (Get-ChildItem "$folderPath" -Filter "*.sln") -or (Get-ChildItem "$folderPath" -Filter "*.slnx")
     $folderPathContainsCsprojFile = Test-Path "$($folderPath)\*.csproj" -PathType Leaf
     if(-Not $folderPathContainsSlnFile -and -Not $folderPathContainsCsprojFile) {
-        Write-Error "The path '$folderPath' does not contain a .sln or .csproj file."
+        Write-Error "The path '$folderPath' does not contain a .sln or .slnx or .csproj file."
         return
     }
 
