@@ -113,6 +113,9 @@ function BolgerUtils-Project-Clean {
         Remove-Item $path -Force -Recurse -ErrorAction Continue
     }
 
+    # NOTE: A wait of 1 second is used here to help ensure the dotnet clean operations above have really finished.
+    Start-Sleep -Seconds 1
+
     BolgerUtils-Project-Remove-BinAndObj $folderPath
 }
 
